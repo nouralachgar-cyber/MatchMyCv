@@ -1,18 +1,38 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../api';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = await loginUser(formData);
+      localStorage.setItem('userInfo', JSON.stringify(data));
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } Object;
+      setLoading(false);
   };
 
   return (
     <div className="max-w-md mx-auto mt-12 px-4">
       <div className="bg-[#12544F]/40 border border-[#12544F] p-8 rounded-2xl shadow-xl">
         <h2 className="text-2xl font-bold text-center mb-6 text-[#8BBB92]">Sign In</h2>
+
+        {error && (
+          <div className="bg-red-500/20 border border-red-500 text-red-200 text-sm p-3 rounded-lg mb-4 text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -41,9 +61,10 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#2A835F] hover:bg-[#2A835F]/80 text-white font-medium py-2.5 rounded-lg transition shadow-lg shadow-[#2A835F]/20"
+            disabled={loading}
+            className="w-full bg-[#2A835F] hover:bg-[#2A835F]/80 text-white font-medium py-2.5 rounded-lg transition shadow-lg shadow-[#2A835F]/20 disabled:opacity-50"
           >
-            Sign In
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
