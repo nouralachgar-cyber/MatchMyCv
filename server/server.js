@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 const multer = require('multer');
 const PDFParser = require('pdf2json');
 const mammoth = require('mammoth');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 dotenv.config();
 connectDB();
@@ -70,8 +70,9 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
       cvText = "CV Profile: Noura Lachgar - Web Developer specializing in React.js, Node.js, Express, JavaScript, HTML, CSS, Tailwind CSS, Git, GitHub, and full-stack development.";
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+   const ai = new GoogleGenAI({
+  apiKey: apiKey
+});
 
     const prompt = `
     You are an expert ATS Resume Analyzer and Career Coach.
@@ -123,10 +124,20 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
     }
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let rawText = response.text();
+ const response = await ai.models.generateContent({
+  model: 'gemini-3.5-flash-lite',
 
+  contents: prompt,
+
+  config: {
+    thinkingConfig: {
+      thinkingLevel: 'minimal'
+    },
+    responseMimeType: 'application/json'
+  }
+});
+
+let rawText = response.text;
     rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     const analysisData = JSON.parse(rawText);
