@@ -5,7 +5,11 @@ const connectDB = require('./config/db');
 const multer = require('multer');
 const PDFParser = require('pdf2json');
 const mammoth = require('mammoth');
+<<<<<<< HEAD
 const { GoogleGenAI, Type } = require('@google/genai');
+=======
+const { GoogleGenAI } = require('@google/genai');
+>>>>>>> 62d6033755c50c9807316fd4f7e85b3b332f0201
 
 dotenv.config();
 connectDB();
@@ -110,8 +114,14 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
     console.log('CV text extracted successfully.');
     console.log('CV text length:', cvText.length);
+=======
+   const ai = new GoogleGenAI({
+  apiKey: apiKey
+});
+>>>>>>> 62d6033755c50c9807316fd4f7e85b3b332f0201
 
     // ================================
     // Initialize Gemini
@@ -427,12 +437,30 @@ Analyze:
       throw new Error('Gemini returned an empty response.');
     }
 
+<<<<<<< HEAD
     console.log('Gemini analysis completed successfully.');
 
     // ================================
     // Parse JSON
     // ================================
     let analysisData;
+=======
+ const response = await ai.models.generateContent({
+  model: 'gemini-3.5-flash-lite',
+
+  contents: prompt,
+
+  config: {
+    thinkingConfig: {
+      thinkingLevel: 'minimal'
+    },
+    responseMimeType: 'application/json'
+  }
+});
+
+let rawText = response.text;
+    rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+>>>>>>> 62d6033755c50c9807316fd4f7e85b3b332f0201
 
     try {
       analysisData = JSON.parse(rawText);

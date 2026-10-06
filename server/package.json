@@ -12,7 +12,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+<<<<<<< HEAD
     "@google/genai": "^2.25.0",
+=======
+    "@google/genai": "^2.27.0",
+    "@google/generative-ai": "^0.24.1",
+>>>>>>> 62d6033755c50c9807316fd4f7e85b3b332f0201
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.4",

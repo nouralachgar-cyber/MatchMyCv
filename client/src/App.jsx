@@ -14,6 +14,7 @@ function App() {
       <div className="min-h-screen bg-[#092328] text-slate-100 flex flex-col font-sans">
         <Toaster position="top-right" />
         <Navbar />
+
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />

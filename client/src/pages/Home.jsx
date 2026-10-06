@@ -5,8 +5,10 @@ import { ArrowRight, Sparkles, FileCheck, Target, Cpu } from 'lucide-react';
 const Home = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-16 flex flex-col items-center text-center">
+
       <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#12544F]/60 border border-[#2A835F]/40 text-[#8BBB92] text-sm mb-6">
-        <Sparkles className="w-4 h-4" /> AI Powered
+        <Sparkles className="w-4 h-4" />
+        AI Powered
       </div>
 
       <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight">
@@ -30,25 +32,38 @@ const Home = () => {
         </Link>
       </div>
 
-      {/* Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full text-left">
+
         <div className="bg-[#12544F]/40 border border-[#12544F] p-6 rounded-2xl">
           <FileCheck className="w-8 h-8 text-[#8BBB92] mb-4" />
-          <h3 className="text-xl font-bold mb-2">CV Analysis</h3>
-          <p className="text-sm text-slate-300">Accurately extract skills, experience, and structure quality.</p>
+          <h3 className="text-xl font-bold mb-2">
+            CV Analysis
+          </h3>
+          <p className="text-sm text-slate-300">
+            Accurately extract skills, experience, and structure quality.
+          </p>
         </div>
 
         <div className="bg-[#12544F]/40 border border-[#12544F] p-6 rounded-2xl">
           <Target className="w-8 h-8 text-[#8BBB92] mb-4" />
-          <h3 className="text-xl font-bold mb-2">Job Matcher</h3>
-          <p className="text-sm text-slate-300">Compare your CV against any job post to find missing keywords.</p>
+          <h3 className="text-xl font-bold mb-2">
+            Career Matching
+          </h3>
+          <p className="text-sm text-slate-300">
+            Discover the jobs that best match your skills, experience, and career profile.
+          </p>
         </div>
 
         <div className="bg-[#12544F]/40 border border-[#12544F] p-6 rounded-2xl">
           <Cpu className="w-8 h-8 text-[#8BBB92] mb-4" />
-          <h3 className="text-xl font-bold mb-2">AI Suggestions</h3>
-          <p className="text-sm text-slate-300">Smart tips and rewrites to boost your interview chances.</p>
+          <h3 className="text-xl font-bold mb-2">
+            AI Suggestions
+          </h3>
+          <p className="text-sm text-slate-300">
+            Smart tips and rewrites to boost your interview chances.
+          </p>
         </div>
+
       </div>
     </div>
   );
