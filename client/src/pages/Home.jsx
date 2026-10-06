@@ -24,7 +24,7 @@ const Home = () => {
 
       <div className="mt-8 flex flex-wrap justify-center gap-4">
         <Link
-          to="/register"
+          to="/dashboard"
           className="flex items-center gap-2 bg-[#2A835F] hover:bg-[#2A835F]/80 text-white font-medium px-6 py-3 rounded-xl transition shadow-lg shadow-[#2A835F]/20"
         >
           Try Free Now
