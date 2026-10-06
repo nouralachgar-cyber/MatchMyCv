@@ -174,7 +174,7 @@ export default function Dashboard() {
 
                   <h3 className="text-lg font-bold text-emerald-400 mb-3 flex items-center gap-2">
                     <span>💼</span>
-                    الخدمات والفرص الموصى بها بناءً على الـ CV ديالك:
+                    Recommended Services And Opportunities Based on Your CV
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
