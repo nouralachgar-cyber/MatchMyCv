@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 const multer = require('multer');
 const PDFParser = require('pdf2json');
 const mammoth = require('mammoth');
-const { GoogleGenAI, Type } = require('@google/genai');
+const Groq = require('groq-sdk');
 
 dotenv.config();
 connectDB();
@@ -55,11 +55,11 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
       });
     }
 
-    // Check Gemini API key
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Check Groq API key
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
-      console.error('GEMINI_API_KEY is missing from .env');
+      console.error('GROQ_API_KEY is missing from .env');
 
       return res.status(500).json({
         error: 'حدث خطأ فني أثناء التحليل. المرجو المحاولة لاحقاً.'
@@ -114,9 +114,9 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
     console.log('CV text length:', cvText.length);
 
     // ================================
-    // Initialize Gemini
+    // Initialize Groq
     // ================================
-    const ai = new GoogleGenAI({
+    const groq = new Groq({
       apiKey: apiKey
     });
 
@@ -133,7 +133,39 @@ IMPORTANT:
 - Do not invent experience, education, skills, or achievements.
 - If information is missing from the CV, mention that it is missing.
 - Return a professional and useful analysis.
-- Return ONLY valid JSON matching the provided schema.
+- Return ONLY valid JSON (no markdown, no explanation) matching EXACTLY this structure:
+
+{
+  "overallScore": <number 0-100>,
+  "scoreReason": "<string>",
+  "atsScore": <number 0-100>,
+  "atsDetails": {
+    "good": ["<string>"],
+    "issues": ["<string>"],
+    "recommendations": ["<string>"]
+  },
+  "sectionAnalysis": {
+    "personalInfo": { "status": "<string>", "feedback": "<string>" },
+    "summary": { "status": "<string>", "feedback": "<string>" },
+    "experience": { "status": "<string>", "feedback": "<string>" },
+    "education": { "status": "<string>", "feedback": "<string>" },
+    "skills": { "status": "<string>", "feedback": "<string>" }
+  },
+  "errorsDetected": [
+    { "type": "<string>", "issue": "<string>", "fix": "<string>" }
+  ],
+  "skillsExtracted": {
+    "technical": ["<string>"],
+    "soft": ["<string>"]
+  },
+  "recommendedServices": ["<string>"],
+  "jobMatch": {
+    "percentage": <number 0-100>,
+    "matchedSkills": ["<string>"],
+    "missingSkills": ["<string>"],
+    "recommendations": ["<string>"]
+  }
+}
 
 CV TEXT:
 """
@@ -144,290 +176,35 @@ TARGET JOB DESCRIPTION:
 """
 ${jobDescription || 'Web Development'}
 """
-
-Analyze:
-1. Overall CV quality
-2. ATS compatibility
-3. Personal information
-4. Professional summary
-5. Experience
-6. Education
-7. Skills
-8. Errors and improvements
-9. Technical and soft skills
-10. Recommended services
-11. Job match percentage
-12. Matched and missing skills
-13. Recommendations
 `;
 
     // ================================
-    // Gemini Analysis
+    // Groq Analysis
     // ================================
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.5-flash-lite',
+    const response = await groq.chat.completions.create({
+      model: 'openai/gpt-oss-120b',
 
-      contents: prompt,
-
-      config: {
-        responseMimeType: 'application/json',
-
-        responseSchema: {
-          type: Type.OBJECT,
-
-          properties: {
-            overallScore: {
-              type: Type.NUMBER
-            },
-
-            scoreReason: {
-              type: Type.STRING
-            },
-
-            atsScore: {
-              type: Type.NUMBER
-            },
-
-            atsDetails: {
-              type: Type.OBJECT,
-
-              properties: {
-                good: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.STRING
-                  }
-                },
-
-                issues: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.STRING
-                  }
-                },
-
-                recommendations: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.STRING
-                  }
-                }
-              },
-
-              required: [
-                'good',
-                'issues',
-                'recommendations'
-              ]
-            },
-
-            sectionAnalysis: {
-              type: Type.OBJECT,
-
-              properties: {
-                personalInfo: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: {
-                      type: Type.STRING
-                    },
-                    feedback: {
-                      type: Type.STRING
-                    }
-                  },
-                  required: ['status', 'feedback']
-                },
-
-                summary: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: {
-                      type: Type.STRING
-                    },
-                    feedback: {
-                      type: Type.STRING
-                    }
-                  },
-                  required: ['status', 'feedback']
-                },
-
-                experience: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: {
-                      type: Type.STRING
-                    },
-                    feedback: {
-                      type: Type.STRING
-                    }
-                  },
-                  required: ['status', 'feedback']
-                },
-
-                education: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: {
-                      type: Type.STRING
-                    },
-                    feedback: {
-                      type: Type.STRING
-                    }
-                  },
-                  required: ['status', 'feedback']
-                },
-
-                skills: {
-                  type: Type.OBJECT,
-                  properties: {
-                    status: {
-                      type: Type.STRING
-                    },
-                    feedback: {
-                      type: Type.STRING
-                    }
-                  },
-                  required: ['status', 'feedback']
-                }
-              },
-
-              required: [
-                'personalInfo',
-                'summary',
-                'experience',
-                'education',
-                'skills'
-              ]
-            },
-
-            errorsDetected: {
-              type: Type.ARRAY,
-
-              items: {
-                type: Type.OBJECT,
-
-                properties: {
-                  type: {
-                    type: Type.STRING
-                  },
-
-                  issue: {
-                    type: Type.STRING
-                  },
-
-                  fix: {
-                    type: Type.STRING
-                  }
-                },
-
-                required: [
-                  'type',
-                  'issue',
-                  'fix'
-                ]
-              }
-            },
-
-            skillsExtracted: {
-              type: Type.OBJECT,
-
-              properties: {
-                technical: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.STRING
-                  }
-                },
-
-                soft: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.STRING
-                  }
-                }
-              },
-
-              required: [
-                'technical',
-                'soft'
-              ]
-            },
-
-            recommendedServices: {
-              type: Type.ARRAY,
-
-              items: {
-                type: Type.STRING
-              }
-            },
-
-            jobMatch: {
-              type: Type.OBJECT,
-
-              properties: {
-                percentage: {
-                  type: Type.NUMBER
-                },
-
-                matchedSkills: {
-                  type: Type.ARRAY,
-
-                  items: {
-                    type: Type.STRING
-                  }
-                },
-
-                missingSkills: {
-                  type: Type.ARRAY,
-
-                  items: {
-                    type: Type.STRING
-                  }
-                },
-
-                recommendations: {
-                  type: Type.ARRAY,
-
-                  items: {
-                    type: Type.STRING
-                  }
-                }
-              },
-
-              required: [
-                'percentage',
-                'matchedSkills',
-                'missingSkills',
-                'recommendations'
-              ]
-            }
-          },
-
-          required: [
-            'overallScore',
-            'scoreReason',
-            'atsScore',
-            'atsDetails',
-            'sectionAnalysis',
-            'errorsDetected',
-            'skillsExtracted',
-            'recommendedServices',
-            'jobMatch'
-          ]
+      messages: [
+        {
+          role: 'user',
+          content: prompt
         }
-      }
+      ],
+
+      response_format: { type: 'json_object' },
+      temperature: 0.3
     });
 
     // ================================
     // Get response text
     // ================================
-    const rawText = response.text;
+    const rawText = response.choices[0]?.message?.content;
 
     if (!rawText) {
-      throw new Error('Gemini returned an empty response.');
+      throw new Error('Groq returned an empty response.');
     }
 
-    console.log('Gemini analysis completed successfully.');
+    console.log('Groq analysis completed successfully.');
 
     // ================================
     // Parse JSON
@@ -438,7 +215,7 @@ Analyze:
       analysisData = JSON.parse(rawText);
     } catch (jsonError) {
       console.error('JSON Parse Error:', jsonError);
-      console.error('Gemini Raw Response:', rawText);
+      console.error('Groq Raw Response:', rawText);
 
       return res.status(500).json({
         error: 'تعذر معالجة نتيجة تحليل الـCV.'
@@ -451,7 +228,7 @@ Analyze:
     return res.json(analysisData);
 
   } catch (error) {
-    console.error('Gemini AI Processing Error:', error);
+    console.error('Groq AI Processing Error:', error);
 
     return res.status(500).json({
       error: 'حدث خطأ أثناء تحليل الـ CV. المرجو المحاولة مرة أخرى.'
